@@ -51,6 +51,7 @@ import com.google.android.material.animation.AnimationUtils;
 import com.google.android.material.badge.BadgeDrawable;
 import com.google.android.material.internal.TextScale;
 import com.google.android.material.motion.MotionUtils;
+import com.google.android.material.navigation.NavigationBarView.ItemIconGravity;
 import com.google.android.material.shape.MaterialShapeDrawable;
 import com.google.android.material.shape.ShapeAppearanceModel;
 import java.util.HashSet;
@@ -77,6 +78,8 @@ public abstract class NavigationBarMenuView extends ViewGroup implements MenuVie
   private final SparseArray<OnTouchListener> onTouchListeners = new SparseArray<>(ITEM_POOL_SIZE);
 
   @NavigationBarView.LabelVisibility private int labelVisibilityMode;
+
+  @ItemIconGravity private int itemIconGravity;
 
   @Nullable private NavigationBarItemView[] buttons;
   private int selectedItemId = 0;
@@ -107,6 +110,7 @@ public abstract class NavigationBarMenuView extends ViewGroup implements MenuVie
 
   private NavigationBarPresenter presenter;
   private MenuBuilder menu;
+  private boolean measurePaddingFromLabelBaseline;
 
   public NavigationBarMenuView(@NonNull Context context) {
     super(context);
@@ -362,6 +366,15 @@ public abstract class NavigationBarMenuView extends ViewGroup implements MenuVie
     if (buttons != null) {
       for (NavigationBarItemView item : buttons) {
         item.setItemPaddingBottom(paddingBottom);
+      }
+    }
+  }
+
+  public void setMeasurePaddingFromLabelBaseline(boolean measurePaddingFromLabelBaseline) {
+    this.measurePaddingFromLabelBaseline = measurePaddingFromLabelBaseline;
+    if (buttons != null) {
+      for (NavigationBarItemView item : buttons) {
+        item.setMeasureBottomPaddingFromLabelBaseline(measurePaddingFromLabelBaseline);
       }
     }
   }
@@ -667,6 +680,28 @@ public abstract class NavigationBarMenuView extends ViewGroup implements MenuVie
   }
 
   /**
+   * Sets the navigation items' icon gravity.
+   *
+   * @param itemIconGravity the placement of the icon in the nav item one of {@link
+   *     NavigationBarView#ITEM_ICON_GRAVITY_TOP}, or {@link
+   *     NavigationBarView#ITEM_ICON_GRAVITY_START}
+   * @see #getItemIconGravity()
+   */
+  public void setItemIconGravity(@ItemIconGravity int itemIconGravity) {
+    this.itemIconGravity = itemIconGravity;
+  }
+
+  /**
+   * Returns the current item icon gravity.
+   *
+   * @see #setItemIconGravity(int)
+   */
+  @ItemIconGravity
+  public int getItemIconGravity() {
+    return itemIconGravity;
+  }
+
+  /**
    * Sets an {@link android.view.View.OnTouchListener} for the item view associated with the
    * provided {@code menuItemId}.
    */
@@ -753,6 +788,7 @@ public abstract class NavigationBarMenuView extends ViewGroup implements MenuVie
       if (itemPaddingBottom != NO_PADDING) {
         child.setItemPaddingBottom(itemPaddingBottom);
       }
+      child.setMeasureBottomPaddingFromLabelBaseline(measurePaddingFromLabelBaseline);
       if (itemActiveIndicatorLabelPadding != NO_PADDING) {
         child.setActiveIndicatorLabelPadding(itemActiveIndicatorLabelPadding);
       }
@@ -770,6 +806,7 @@ public abstract class NavigationBarMenuView extends ViewGroup implements MenuVie
       child.setItemRippleColor(itemRippleColor);
       child.setShifting(shifting);
       child.setLabelVisibilityMode(labelVisibilityMode);
+      child.setItemIconGravity(itemIconGravity);
       MenuItemImpl item = (MenuItemImpl) menu.getItem(i);
       child.initialize(item, 0);
       child.setItemPosition(i);
@@ -816,6 +853,7 @@ public abstract class NavigationBarMenuView extends ViewGroup implements MenuVie
     for (int i = 0; i < menuSize; i++) {
       presenter.setUpdateSuspended(true);
       buttons[i].setLabelVisibilityMode(labelVisibilityMode);
+      buttons[i].setItemIconGravity(itemIconGravity);
       buttons[i].setShifting(shifting);
       buttons[i].initialize((MenuItemImpl) menu.getItem(i), 0);
       presenter.setUpdateSuspended(false);
